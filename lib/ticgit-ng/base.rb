@@ -2,18 +2,24 @@ module TicGitNG
   class NoRepoFound < StandardError;end
   class Base
 
-    attr_reader :git, :logger
+    attr_reader :git, :logger, :repo
     attr_reader :tic_working, :tic_index, :tic_dir
     attr_reader :last_tickets, :current_ticket  # saved in state
     attr_reader :config
     attr_reader :state, :config_file
 
     def initialize(git_dir, opts = {})
-      @git = Git.open(find_repo(git_dir))
+      @repo = Rugged::Repository.new(find_repo(git_dir))
+      # This will be useful that way we don't have to worry about switching branches
+      @base_commit = Rugged::Commit.lookup(@repo,
+        Rugged::Reference.lookup(@repo, "refs/heads/#{which_branch?}").target)
+      
+      @git = Git.open(File.dirname(find_repo(git_dir)))
       @logger = opts[:logger] || Logger.new(STDOUT)
       @last_tickets = []
 
-      proj = Ticket.clean_string(@git.dir.path)
+      # proj = Ticket.clean_string(@git.dir.path)
+      proj = Ticket.clean_string(File.dirname(find_repo(git_dir)))
 
       @tic_dir = opts[:tic_dir] || "~/.#{which_branch?}"
       @tic_working = opts[:working_directory] || File.expand_path(File.join(@tic_dir, proj, 'working'))
@@ -37,9 +43,9 @@ module TicGitNG
     end
 
     def find_repo(dir)
-      full = File.expand_path(dir)
+      full = File.join(File.expand_path(dir), ".git")
       ENV["GIT_WORKING_DIR"] || loop do
-        return full if File.directory?(File.join(full, ".git"))
+        return full if File.directory? full
         raise NoRepoFound if full == full=File.dirname(full)
       end
     end
@@ -278,6 +284,7 @@ module TicGitNG
     end
 
     def sync_tickets(repo='origin', push=true, verbose=true )
+      # FIXME: (upstream) Can't do remote operations yet with rugged
       puts "Fetching #{repo}" if verbose
       @git.fetch(repo)
       puts "Syncing tickets with #{repo}" if verbose
@@ -370,11 +377,11 @@ module TicGitNG
       File.open(name, 'w+'){|f| f.puts(contents) }
     end
     def which_branch?
-      branches=@git.branches.local.map {|b| b.name}
-      if branches.include? 'ticgit-ng'
-        return 'ticgit-ng'
-      else
-        return 'ticgit'
+      begin
+        Rugged::Reference.lookup(@repo, "refs/heads/ticgit-ng")
+        "ticgit-ng"
+      rescue RuntimeError
+        "ticgit"
       end
       #If has ~/.ticgit dir, and 'ticgit' branch
       #If has ~/.ticgit-ng dir, and 'ticgit-ng' branch, and not ~/.ticgit dir and not 'ticgit' branch

@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
 
   s.rubyforge_project         = "ticgit-ng"
 
-  s.add_dependency "git"
+  s.add_dependency "rugged"
   s.add_development_dependency "rspec"
   s.files       = Dir.glob("{bin,lib}/**/*") + %w( LICENSE_MIT LICENSE_GPL README.mkd )
   s.executables = ['ti', 'ticgitweb']

@@ -12,26 +12,27 @@ $:.unshift(File.dirname(__FILE__)) unless
 
 require 'rubygems'
 # requires git >= 1.0.5
+require 'rugged'
 require 'git'
 
 #Only redefine if we are not using 1.9
-unless Config::CONFIG["ruby_version"][/^\d\.9/]
-  # FIXME: Monkeypatch git until fixed upstream
-  module Git
-    class Lib
-      def config_get(name)
-        do_get = lambda do |name|
-          command('config', ['--get', name])
-        end
-        if @git_dir
-          Dir.chdir(@git_dir, &do_get)
-        else
-          build_list.call
-        end
-      end
-    end
-  end
-end
+# unless Config::CONFIG["ruby_version"][/^\d\.9/]
+#   # FIXME: Monkeypatch git until fixed upstream
+#   module Git
+#     class Lib
+#       def config_get(name)
+#         do_get = lambda do |name|
+#           command('config', ['--get', name])
+#         end
+#         if @git_dir
+#           Dir.chdir(@git_dir, &do_get)
+#         else
+#           build_list.call
+#         end
+#       end
+#     end
+#   end
+# end
 
 require 'ticgit-ng/base'
 require 'ticgit-ng/cli'
@@ -39,6 +40,7 @@ module TicGitNG
   autoload :VERSION, 'ticgit-ng/version'
   autoload :Comment, 'ticgit-ng/comment'
   autoload :Ticket, 'ticgit-ng/ticket'
+  autoload :Sync, 'ticgit-ng/sync'
 
   # options
   #   :logger => Logger.new(STDOUT)

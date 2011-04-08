@@ -226,6 +226,12 @@ module TicGitNG
       opts[:user_email] || 'anon'
     end
 
+    def updated_at
+      base.in_branch do |wd|
+        base.git.log.object(ticket_name).first.date
+      end
+    end
+
     def assigned_name
       assigned.split('@').first rescue ''
     end

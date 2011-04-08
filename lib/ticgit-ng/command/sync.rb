@@ -11,6 +11,10 @@ module TicGitNG
           "-n", "--no-push", "Do not push to the remote repo"){|v|
           options.no_push = true
         }
+        opts.on_head(
+          "-s SOURCE", "--source SOURCE", "Source to sync with"){|v|
+          options.source = v
+        }
       end
 
       def execute
