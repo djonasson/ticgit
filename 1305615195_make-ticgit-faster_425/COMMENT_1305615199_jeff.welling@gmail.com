@@ -1,0 +1,1 @@
+At present in TicGitNG runs very slowly even with the few tickets it has.  I suspect that there are superfluous reset_ticgit calls all over the place. I can think of two acceptable fixes, add a caching layer between reading the tickets, or remove the extraneous reset_ticgit calls.
