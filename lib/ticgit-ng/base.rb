@@ -17,6 +17,19 @@ module TicGitNG
       @tic_index = opts[:index_file] || File.expand_path(File.join(@tic_dir, proj, 'index'))
 
       @logger = opts[:logger] || Logger.new(STDOUT)
+
+      # This is to accomodate for edge-cases where @logger.puts
+      # is called from debugging code.
+      if @logger.respond_to?(:puts) && !@logger.respond_to?(:info)
+        @logger.class.class_eval do
+          alias :info :puts
+        end
+      elsif @logger.respond_to?(:info) && !@logger.respond_to?(:puts)
+        @logger.class.class_eval do
+          alias :puts :info
+        end
+      end
+
       @last_tickets = []
 
       #expire @tic_index and @tic_working if it mtime is older than git log
